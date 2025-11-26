@@ -7,7 +7,8 @@
     "test": "jest --ci"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "axios": "^1.6.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",
