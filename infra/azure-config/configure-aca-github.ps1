@@ -16,7 +16,7 @@ az account set --subscription $SubscriptionId
 Write-Host "Configuring GitHub Actions for api-node..."
 if ($GitHubToken) {
   az containerapp github-action add `
-    --name api-node `
+    --name tdc25-api-node `
     --resource-group $ResourceGroup `
     --repo-url $RepoUrl `
     --branch $Branch `
@@ -27,7 +27,7 @@ if ($GitHubToken) {
     --service-principal-tenant-id $ServicePrincipalTenantId
 } else {
   az containerapp github-action add `
-    --name api-node `
+    --name tdc25-api-node `
     --resource-group $ResourceGroup `
     --repo-url $RepoUrl `
     --branch $Branch `
@@ -41,7 +41,7 @@ if ($GitHubToken) {
 Write-Host "Configuring GitHub Actions for worker-python..."
 if ($GitHubToken) {
   az containerapp github-action add `
-    --name worker-python `
+    --name tdc25-worker-python `
     --resource-group $ResourceGroup `
     --repo-url $RepoUrl `
     --branch $Branch `
@@ -52,7 +52,7 @@ if ($GitHubToken) {
     --service-principal-tenant-id $ServicePrincipalTenantId
 } else {
   az containerapp github-action add `
-    --name worker-python `
+    --name tdc25-worker-python `
     --resource-group $ResourceGroup `
     --repo-url $RepoUrl `
     --branch $Branch `
