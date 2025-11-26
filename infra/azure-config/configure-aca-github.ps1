@@ -25,7 +25,8 @@ if ($GitHubToken) {
     --resource-group $ResourceGroup `
     --repo-url $RepoUrl `
     --branch $Branch `
-    --registry-url $AcrServer
+    --registry-url $AcrServer `
+    --login-with-github
 }
 
 Write-Host "Configuring GitHub Actions for worker-python..."
@@ -43,5 +44,6 @@ if ($GitHubToken) {
     --resource-group $ResourceGroup `
     --repo-url $RepoUrl `
     --branch $Branch `
-    --registry-url $AcrServer
+    --registry-url $AcrServer `
+    --login-with-github
 }

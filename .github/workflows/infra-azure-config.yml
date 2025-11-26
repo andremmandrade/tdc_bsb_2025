@@ -36,4 +36,5 @@ jobs:
             -EnvironmentName "${{ env.ENVIRONMENT_NAME }}" `
             -RepoUrl "${{ env.REPO_URL }}" `
             -Branch "${{ env.BRANCH }}" `
-              -AcrServer "${{ env.ACR_SERVER }}"
+            -AcrServer "${{ env.ACR_SERVER }}" `
+            -GitHubToken "${{ secrets.GH_PAT }}"
