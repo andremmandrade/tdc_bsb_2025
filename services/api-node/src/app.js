@@ -75,4 +75,22 @@ app.get('/api/weather/ny', async (req, res) => {
   }
 });
 
+// Load testing endpoint - simulates CPU-intensive work
+app.get('/api/load', (req, res) => {
+  const duration = parseInt(req.query.duration) || 100;
+  const start = Date.now();
+  
+  // Simulate work
+  let result = 0;
+  while (Date.now() - start < duration) {
+    result += Math.sqrt(Math.random());
+  }
+  
+  res.json({ 
+    message: 'Load test completed',
+    duration: `${Date.now() - start}ms`,
+    result: result 
+  });
+});
+
 module.exports = app;

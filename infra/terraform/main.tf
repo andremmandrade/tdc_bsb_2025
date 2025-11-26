@@ -77,6 +77,9 @@ resource "azurerm_container_app" "api_node" {
   }
   revision_mode = "Single"
   template {
+    min_replicas = 1
+    max_replicas = 10
+    
     container {
       name   = "api-node"
       image  = var.api_node_image
@@ -86,6 +89,11 @@ resource "azurerm_container_app" "api_node" {
         name  = "KEDA_CONCURRENT_REQUESTS"
         value = "50"
       }
+    }
+    
+    http_scale_rule {
+      name                = "http-rule"
+      concurrent_requests = 10
     }
   }
   ingress {
@@ -114,6 +122,9 @@ resource "azurerm_container_app" "worker_python" {
   }
   revision_mode = "Single"
   template {
+    min_replicas = 1
+    max_replicas = 10
+    
     container {
       name   = "worker-python"
       image  = var.worker_python_image
@@ -123,6 +134,11 @@ resource "azurerm_container_app" "worker_python" {
         name  = "KEDA_CONCURRENT_REQUESTS"
         value = "50"
       }
+    }
+    
+    http_scale_rule {
+      name                = "http-rule"
+      concurrent_requests = 10
     }
   }
   ingress {
