@@ -1,0 +1,52 @@
+# General
+.DS_Store
+Thumbs.db
+.env
+.env.*
+.vscode/
+.idea/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/
+dist/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+
+# Docker
+*.tar
+
+# Terraform (keep .terraform.lock.hcl committed)
+infra/terraform/.terraform/
+infra/terraform/.terraform/*
+infra/terraform/terraform.tfstate
+infra/terraform/terraform.tfstate.*
+infra/terraform/errored.tfstate
+infra/terraform/terraform.tfvars
+
+# Azure DevOps / GitHub Actions artifacts
+*.coverage
+*.trx
+TestResults/
+
+# OS-specific
+ehthumbs.db
+Icon?
+node_modules/
+**/__pycache__/
+*.pyc
+.env
+.env.*
+Dockerfile.dev
+.dist/
+coverage/

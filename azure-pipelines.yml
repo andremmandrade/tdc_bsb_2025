@@ -1,0 +1,75 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  ACR_NAME: '$(ACR_NAME)'
+  RESOURCE_GROUP: '$(RESOURCE_GROUP)'
+  CONTAINERAPPS_ENV: '$(CONTAINERAPPS_ENV)'
+  AZURE_SUBSCRIPTION_ID: '$(AZURE_SUBSCRIPTION_ID)'
+  API_IMAGE: '$(ACR_NAME).azurecr.io/api-node:$(Build.SourceVersion)'
+  WORKER_IMAGE: '$(ACR_NAME).azurecr.io/worker-python:$(Build.SourceVersion)'
+
+stages:
+- stage: Test
+  jobs:
+  - job: UnitTests
+    steps:
+    - checkout: self
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '20.x'
+    - script: |
+        cd services/api-node
+        npm install
+        npm test
+      displayName: 'Node API tests'
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.11'
+    - script: |
+        cd services/worker-python
+        python -m pip install -r requirements-dev.txt
+        python -m pytest -q
+      displayName: 'Python worker tests'
+
+- stage: BuildPush
+  dependsOn: Test
+  jobs:
+  - job: BuildAndPush
+    steps:
+    - checkout: self
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'AzureServiceConnection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az account set --subscription $(AZURE_SUBSCRIPTION_ID)
+          az acr build \
+            --registry $(ACR_NAME) \
+            --image api-node:$(Build.SourceVersion) \
+            --file services/api-node/Dockerfile \
+            .
+          az acr build \
+            --registry $(ACR_NAME) \
+            --image worker-python:$(Build.SourceVersion) \
+            --file services/worker-python/Dockerfile \
+            .
+
+- stage: Deploy
+  dependsOn: BuildPush
+  jobs:
+  - job: DeployACA
+    steps:
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'AzureServiceConnection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az account set --subscription $(AZURE_SUBSCRIPTION_ID)
+          az containerapp update --name api-node --resource-group $(RESOURCE_GROUP) --image $(ACR_NAME).azurecr.io/api-node:$(Build.SourceVersion) --environment $(CONTAINERAPPS_ENV)
+          az containerapp update --name worker-python --resource-group $(RESOURCE_GROUP) --image $(ACR_NAME).azurecr.io/worker-python:$(Build.SourceVersion) --environment $(CONTAINERAPPS_ENV)

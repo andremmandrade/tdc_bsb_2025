@@ -1,0 +1,70 @@
+name: ci-cd
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      ACR_NAME: ${{ secrets.ACR_NAME }}
+      RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
+      CONTAINERAPPS_ENV: ${{ secrets.CONTAINERAPPS_ENV }}
+      SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      API_IMAGE: ${{ env.ACR_NAME }}.azurecr.io/api-node:${{ github.sha }}
+      WORKER_IMAGE: ${{ env.ACR_NAME }}.azurecr.io/worker-python:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install and test Node API
+        working-directory: services/api-node
+        run: |
+          npm install
+          npm test
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install and test Python Worker
+        working-directory: services/worker-python
+        run: |
+          python -m pip install -r requirements-dev.txt
+          python -m pytest -q
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Server-side build images in ACR
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az account set --subscription ${{ env.SUBSCRIPTION_ID }}
+            az acr build \
+              --registry ${{ env.ACR_NAME }} \
+              --image api-node:${{ github.sha }} \
+              --file services/api-node/Dockerfile \
+              .
+            az acr build \
+              --registry ${{ env.ACR_NAME }} \
+              --image worker-python:${{ github.sha }} \
+              --file services/worker-python/Dockerfile \
+              .
+
+      - name: Deploy to Azure Container Apps
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az account set --subscription ${{ env.SUBSCRIPTION_ID }}
+            az containerapp update --name api-node --resource-group ${{ env.RESOURCE_GROUP }} --image ${{ env.API_IMAGE }} --environment ${{ env.CONTAINERAPPS_ENV }} -o none
+            az containerapp update --name worker-python --resource-group ${{ env.RESOURCE_GROUP }} --image ${{ env.WORKER_IMAGE }} --environment ${{ env.CONTAINERAPPS_ENV }} -o none
