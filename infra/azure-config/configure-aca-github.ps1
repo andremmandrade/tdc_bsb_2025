@@ -10,24 +10,38 @@ Param(
 
 az account set --subscription $SubscriptionId
 
-${null} = az containerapp github-action add `
-  --name api-node `
-  --resource-group $ResourceGroup `
-  --repo-url $RepoUrl `
-  --branch $Branch `
-  --container-name api-node `
-  --environment $EnvironmentName `
-  --registry-url $AcrServer `
-  --azure-subscription $SubscriptionId `
-  $(if ($GitHubToken) {"--token $GitHubToken"} else {""})
+Write-Host "Configuring GitHub Actions for api-node..."
+if ($GitHubToken) {
+  az containerapp github-action add `
+    --name api-node `
+    --resource-group $ResourceGroup `
+    --repo-url $RepoUrl `
+    --branch $Branch `
+    --registry-url $AcrServer `
+    --token $GitHubToken
+} else {
+  az containerapp github-action add `
+    --name api-node `
+    --resource-group $ResourceGroup `
+    --repo-url $RepoUrl `
+    --branch $Branch `
+    --registry-url $AcrServer
+}
 
-${null} = az containerapp github-action add `
-  --name worker-python `
-  --resource-group $ResourceGroup `
-  --repo-url $RepoUrl `
-  --branch $Branch `
-  --container-name worker-python `
-  --environment $EnvironmentName `
-  --registry-url $AcrServer `
-  --azure-subscription $SubscriptionId `
-  $(if ($GitHubToken) {"--token $GitHubToken"} else {""})
+Write-Host "Configuring GitHub Actions for worker-python..."
+if ($GitHubToken) {
+  az containerapp github-action add `
+    --name worker-python `
+    --resource-group $ResourceGroup `
+    --repo-url $RepoUrl `
+    --branch $Branch `
+    --registry-url $AcrServer `
+    --token $GitHubToken
+} else {
+  az containerapp github-action add `
+    --name worker-python `
+    --resource-group $ResourceGroup `
+    --repo-url $RepoUrl `
+    --branch $Branch `
+    --registry-url $AcrServer
+}
