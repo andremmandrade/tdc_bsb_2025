@@ -5,7 +5,10 @@ Param(
   [Parameter(Mandatory=$true)] [string]$RepoUrl,
   [Parameter(Mandatory=$true)] [string]$Branch,
   [Parameter(Mandatory=$true)] [string]$AcrServer,
-  [Parameter(Mandatory=$false)] [string]$GitHubToken
+  [Parameter(Mandatory=$false)] [string]$GitHubToken,
+  [Parameter(Mandatory=$true)] [string]$ServicePrincipalId,
+  [Parameter(Mandatory=$true)] [string]$ServicePrincipalSecret,
+  [Parameter(Mandatory=$true)] [string]$ServicePrincipalTenantId
 )
 
 az account set --subscription $SubscriptionId
@@ -18,7 +21,10 @@ if ($GitHubToken) {
     --repo-url $RepoUrl `
     --branch $Branch `
     --registry-url $AcrServer `
-    --token $GitHubToken
+    --token $GitHubToken `
+    --service-principal-client-id $ServicePrincipalId `
+    --service-principal-client-secret $ServicePrincipalSecret `
+    --service-principal-tenant-id $ServicePrincipalTenantId
 } else {
   az containerapp github-action add `
     --name api-node `
@@ -26,7 +32,10 @@ if ($GitHubToken) {
     --repo-url $RepoUrl `
     --branch $Branch `
     --registry-url $AcrServer `
-    --login-with-github
+    --login-with-github `
+    --service-principal-client-id $ServicePrincipalId `
+    --service-principal-client-secret $ServicePrincipalSecret `
+    --service-principal-tenant-id $ServicePrincipalTenantId
 }
 
 Write-Host "Configuring GitHub Actions for worker-python..."
@@ -37,7 +46,10 @@ if ($GitHubToken) {
     --repo-url $RepoUrl `
     --branch $Branch `
     --registry-url $AcrServer `
-    --token $GitHubToken
+    --token $GitHubToken `
+    --service-principal-client-id $ServicePrincipalId `
+    --service-principal-client-secret $ServicePrincipalSecret `
+    --service-principal-tenant-id $ServicePrincipalTenantId
 } else {
   az containerapp github-action add `
     --name worker-python `
@@ -45,5 +57,8 @@ if ($GitHubToken) {
     --repo-url $RepoUrl `
     --branch $Branch `
     --registry-url $AcrServer `
-    --login-with-github
+    --login-with-github `
+    --service-principal-client-id $ServicePrincipalId `
+    --service-principal-client-secret $ServicePrincipalSecret `
+    --service-principal-tenant-id $ServicePrincipalTenantId
 }

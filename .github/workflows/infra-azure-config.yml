@@ -37,4 +37,7 @@ jobs:
             -RepoUrl "${{ env.REPO_URL }}" `
             -Branch "${{ env.BRANCH }}" `
             -AcrServer "${{ env.ACR_SERVER }}" `
-            -GitHubToken "${{ secrets.GH_PAT }}"
+            -GitHubToken "${{ secrets.GH_PAT }}" `
+            -ServicePrincipalId "${{ secrets.AZURE_SP_CLIENT_ID }}" `
+            -ServicePrincipalSecret "${{ secrets.AZURE_SP_CLIENT_SECRET }}" `
+            -ServicePrincipalTenantId "${{ secrets.AZURE_TENANT_ID }}"
