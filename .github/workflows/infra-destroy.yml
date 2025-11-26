@@ -1,0 +1,59 @@
+name: infra-destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "destroy" to confirm resource deletion'
+        required: true
+        type: string
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    environment: tdc_env
+    env:
+      SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+    
+    steps:
+      - name: Validate confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "destroy" ]; then
+            echo "❌ Confirmation failed. You must type 'destroy' to proceed."
+            exit 1
+          fi
+          echo "✅ Confirmation validated. Proceeding with destruction..."
+
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Terraform Init
+        working-directory: infra/terraform
+        env:
+          ARM_STORAGE_USE_AZUREAD: 'true'
+          ARM_USE_AZUREAD: 'true'
+        run: |
+          terraform init -reconfigure
+
+      - name: Terraform Destroy
+        working-directory: infra/terraform
+        run: |
+          terraform destroy \
+            -var "subscription_id=${{ env.SUBSCRIPTION_ID }}" \
+            -var "tenant_id=${{ env.TENANT_ID }}" \
+            -auto-approve
+
+      - name: Destruction Complete
+        run: |
+          echo "🗑️  All Terraform-managed resources have been destroyed."
+          echo "⚠️  Note: The Terraform state storage account must be deleted manually if needed."
