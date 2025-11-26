@@ -96,10 +96,6 @@ resource "azurerm_container_app" "api_node" {
       latest_revision = true
     }
   }
-  registry {
-    server   = azurerm_container_registry.acr.login_server
-    identity = azurerm_user_assigned_identity.acr_pull.id
-  }
 }
 
 resource "azurerm_container_app" "worker_python" {
@@ -137,11 +133,10 @@ resource "azurerm_container_app" "worker_python" {
       latest_revision = true
     }
   }
-  registry {
-    server   = azurerm_container_registry.acr.login_server
-    identity = azurerm_user_assigned_identity.acr_pull.id
-  }
 }
+
+# Note: GitHub Actions integration for ACA is configured via Azure CLI (az containerapp github-action add).
+# Terraform azurerm currently does not support a container app source control resource.
 
 # User-assigned identity for pulling images from ACR
 resource "azurerm_user_assigned_identity" "acr_pull" {

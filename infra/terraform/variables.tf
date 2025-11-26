@@ -52,6 +52,23 @@ variable "worker_python_image" {
   default     = "tdc25demoregistry.azurecr.io/worker-python:latest"
 }
 
+variable "repo_url" {
+  description = "Repository URL to link for ACA (e.g., https://github.com/<org>/<repo>)"
+  type        = string
+}
+
+variable "github_branch" {
+  description = "Branch to deploy from (e.g., main)"
+  type        = string
+  default     = "main"
+}
+
+variable "acr_server" {
+  description = "ACR login server"
+  type        = string
+  default     = "tdc25demoregistry.azurecr.io"
+}
+
 variable "subscription_id" {
   description = "Azure Subscription ID (required if not logged in via Azure CLI)"
   type        = string

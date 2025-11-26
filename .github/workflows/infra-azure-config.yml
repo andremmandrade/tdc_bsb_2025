@@ -1,0 +1,39 @@
+name: infra-azure-config
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'infra/azure-config/**'
+  workflow_dispatch:
+
+jobs:
+  configure-aca-github:
+    runs-on: ubuntu-latest
+    # Update this to the exact GitHub Environment name you created
+    environment: tdc_env
+    env:
+      SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      RESOURCE_GROUP: ${{ secrets.RESOURCE_GROUP }}
+      ENVIRONMENT_NAME: ${{ secrets.CONTAINERAPPS_ENV }}
+      REPO_URL: ${{ secrets.REPO_URL }}
+      BRANCH: 'main'
+      ACR_SERVER: ${{ secrets.ACR_NAME }}.azurecr.io
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Configure ACA GitHub integration
+        shell: pwsh
+        run: |
+          ./infra/azure-config/configure-aca-github.ps1 `
+            -SubscriptionId "${{ env.SUBSCRIPTION_ID }}" `
+            -ResourceGroup "${{ env.RESOURCE_GROUP }}" `
+            -EnvironmentName "${{ env.ENVIRONMENT_NAME }}" `
+            -RepoUrl "${{ env.REPO_URL }}" `
+            -Branch "${{ env.BRANCH }}" `
+              -AcrServer "${{ env.ACR_SERVER }}"

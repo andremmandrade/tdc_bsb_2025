@@ -111,3 +111,42 @@ terraform apply -var "subscription_id=<YOUR_SUBSCRIPTION_ID>" -var "tenant_id=<Y
 - Always pre-create the backend storage account and container when enterprise policies disable key-based authentication.
 - Register required resource providers (e.g., `Microsoft.App`) before provisioning Container Apps to avoid `MissingSubscriptionRegistration` 409 errors.
 - Use `terraform init -reconfigure` after backend changes to refresh auth and provider versions.
+
+## GitHub Actions Integration Prerequisites
+
+- Set GitHub repository secrets used by workflows:
+	- `AZURE_SUBSCRIPTION_ID`: your subscription ID
+	- `AZURE_TENANT_ID`: your tenant ID
+	- `AZURE_CREDENTIALS`: service principal JSON (if using secret-based auth)
+	- `RESOURCE_GROUP`: e.g., `tdc25-demo-rg`
+	- `CONTAINERAPPS_ENV`: ACA environment name (e.g., `tdc25demo-env`)
+	- `ACR_NAME`: e.g., `tdc25demoregistry`
+	- `REPO_URL`: your repo URL (e.g., `https://github.com/<org>/<repo>`) for ACA wiring
+
+- Create a Service Principal and assign roles (demo-friendly scope at Resource Group):
+
+```powershell
+az ad sp create-for-rbac --name "github-actions-sp" --role contributor --scope "/subscriptions/<YOUR_SUBSCRIPTION_ID>/resourceGroups/tdc25-demo-rg" --sdk-auth
+```
+
+Copy the JSON output into the `AZURE_CREDENTIALS` secret. Then grant ACR roles:
+
+```powershell
+az role assignment create --assignee <APP_REG_CLIENT_ID> --role "AcrPush" --scope "/subscriptions/<YOUR_SUBSCRIPTION_ID>/resourceGroups/tdc25-demo-rg/providers/Microsoft.ContainerRegistry/registries/tdc25demoregistry"
+```
+
+- Recommended (more secure) OIDC login alternative:
+	- Configure an Entra ID App Registration and add a Federated Credential for GitHub (issuer `https://token.actions.githubusercontent.com`, subject `repo:<owner>/<repo>:ref:refs/heads/main`, audience `api://AzureADTokenExchange`).
+	- Use `azure/login@v2` with:
+
+```yaml
+uses: azure/login@v2
+with:
+	client-id: ${{ secrets.AZURE_CLIENT_ID }}
+	tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+	subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+```
+
+Roles needed:
+- `Contributor` at the resource group (simplest for demos) to manage ACA and related resources.
+- `AcrPush` to run server-side builds (`az acr build`) and to push/import images when needed.
