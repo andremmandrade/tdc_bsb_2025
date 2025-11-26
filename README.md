@@ -84,7 +84,7 @@ az storage container create \
 az role assignment create \
 	--assignee $(az ad signed-in-user show --query id -o tsv) \
 	--role "Storage Blob Data Contributor" \
-	--scope "/subscriptions/98de53ac-164a-4410-bd9c-18c6c90281f9/resourceGroups/tdc25-demo-rg/providers/Microsoft.Storage/storageAccounts/tdc25tfstatekcb4b7"
+	--scope "/subscriptions/<YOUR_SUBSCRIPTION_ID>/resourceGroups/tdc25-demo-rg/providers/Microsoft.Storage/storageAccounts/tdc25tfstatekcb4b7"
 ```
 
 5) Initialize Terraform backend and run plan/apply:
@@ -95,14 +95,14 @@ export ARM_STORAGE_USE_AZUREAD=true
 export ARM_USE_AZUREAD=true
 terraform init -reconfigure
 terraform validate
-terraform plan -var "subscription_id=98de53ac-164a-4410-bd9c-18c6c90281f9" -var "tenant_id=bb420437-4596-4adf-83f3-9ab4b94b0ec1"
-terraform apply -var "subscription_id=98de53ac-164a-4410-bd9c-18c6c90281f9" -var "tenant_id=bb420437-4596-4adf-83f3-9ab4b94b0ec1" -auto-approve
+terraform plan -var "subscription_id=<YOUR_SUBSCRIPTION_ID>" -var "tenant_id=<YOUR_TENANT_ID>"
+terraform apply -var "subscription_id=<YOUR_SUBSCRIPTION_ID>" -var "tenant_id=<YOUR_TENANT_ID>" -auto-approve
 ```
 
 ### Notes
 - If the storage account or container is missing, Terraform may return 404s when saving state. Create them first.
 - RBAC changes can take ~1–2 minutes to propagate. If you see 403s, wait and retry.
-- Ensure Azure CLI in WSL is logged in and set to the correct subscription: `az login` and `az account set --subscription 98de53ac-164a-4410-bd9c-18c6c90281f9`.
+- Ensure Azure CLI in WSL is logged in and set to the correct subscription: `az login` and `az account set --subscription <YOUR_SUBSCRIPTION_ID>`.
 
 ## Lessons Learned
 
